@@ -187,6 +187,7 @@ const placePayment = require('../lib/payougo');
                     services: services
                 })
             })
+            console.log(Service)
             .catch(err => {
                 return res.status(500).json({ error: err })
             })
@@ -236,7 +237,7 @@ const placePayment = require('../lib/payougo');
 
     // Get last 4 validated services
     router.get('/4', (req, res, next) => {
-        Service.find({validated: true}).sort({ 'rate.value' : 'desc' }).limit(4)
+        Service.find({validated: true}).sort({ $natural: -1 }).limit(4)
             .exec()
             .then(services => {
                 return res.status(200).json({
