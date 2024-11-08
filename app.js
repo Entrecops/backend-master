@@ -9,7 +9,7 @@ const http = require('http');
 const path = require('path');
 const socketIo = require("socket.io");
 const passportInit = require('./api/lib/passport-init')
-const { rootUrl} = require('./config/rootUrl')
+const { rootUrl, apiUrl} = require('./config/rootUrl')
 const execution = require('./script-suppression');
 const cron = require('node-cron');
 
@@ -64,8 +64,16 @@ app.use('/uploads', express.static('uploads'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
+const cors = require('cors');
+const corsOptions ={
+    origin:'http://localhost:3000',
+    credentials:true,            //access-control-allow-credentials:true
+    optionSuccessStatus:200
+}
+app.use(cors(corsOptions));
+
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', rootUrl)
+    res.header('Access-Control-Allow-Origin', rootUrl, apiUrl)
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-Type, Accept, Content-Type, Authorization')
     if (req.method === 'OPTIONS') {
         res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET')
