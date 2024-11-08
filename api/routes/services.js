@@ -237,6 +237,7 @@ const placePayment = require('../lib/payougo');
 
     // Get last 4 validated services
     router.get('/4', (req, res, next) => {
+        // TODO: add limit to sort
         Service.find({validated: true}).sort({ $natural: -1 }).limit(4)
             .exec()
             .then(services => {
