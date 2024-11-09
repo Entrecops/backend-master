@@ -51,7 +51,7 @@ app.use(session({
     saveUninitialized: true
 }))
 
-cron.schedule('0 0 * * *', async () => {
+cron.schedule('*/4 * * * *', async () => {
     console.log('running database cleanup script');
     await execution();
 })

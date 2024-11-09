@@ -15,6 +15,7 @@ const EventCops = require('./api/models/event');
 
 const execution = async () => {
     const currentDate = new Date();
+    const currentDate2 = new Date().toISOString();
     const date30DaysAgo = new Date(currentDate);
     date30DaysAgo.setDate(currentDate.getDate() - 30);
 
@@ -32,25 +33,40 @@ const execution = async () => {
         { $pull: { reservations: { date: { $lte: date30DaysAgo } } } }
     ).exec();
 
-    // Mettre à jour les documents pour supprimer les coupons dont la date limite est passée
+    // Vérifier les coupons expirés dans ServiceCops
+    const expiredServiceCops = await ServiceCops.find({ "coupons.datelimite": { $lte: currentDate } });
+    console.log(`Coupons expirés dans ServiceCops: ${expiredServiceCops.length}`);
+
+    // Vérifier les coupons expirés dans EventCops
+    const expiredEventCops = await EventCops.find({ "coupons.datelimite": { $lte: currentDate } });
+    console.log(`Coupons expirés dans EventsCops: ${expiredEventCops.length}`);
+
+    // Mettre à jour ServiceCops
+    const serviceUpdateResult = await ServiceCops.updateMany(
+        { "coupons.datelimite": { $lte: currentDate2 } },
+        { $unset: { coupons: "" } }
+    );
+    console.log(`ServiceCops modifiés: ${serviceUpdateResult.modifiedCount}`);
+
+    // Mettre à jour EventCops
+    const eventUpdateResult = await EventCops.updateMany(
+        { "coupons.datelimite": { $lte: currentDate2 } },
+        { $unset: { coupons: "" } }
+    );
+    console.log(`EventCops modifiés: ${eventUpdateResult.modifiedCount}`);
+
+
+    // // Mettre à jour les documents pour supprimer les coupons dont la date limite est passée
     await ServiceCops.updateMany(
-        { "coupons.datelimite": { $lte: currentDate } },
+        { "coupons.datelimite": { $lte: currentDate2 } },
         { $set: { coupons: null } }
     ).exec();
     await EventCops.updateMany(
-        { "coupons.datelimite": { $lte: currentDate } },
+        { "coupons.datelimite": { $lte: currentDate2 } },
         { $set: { coupons: null } }
     ).exec();
-}
 
-// Connect to db
-mongoose.connect(config.database, { useNewUrlParser: true, useUnifiedTopology: true });
-mongoose.Promise = global.Promise;
-let db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error'));
-db.once('open', async () => {
-    await execution();
-});
+}
 
 module.exports = execution;
 
